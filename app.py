@@ -16,7 +16,7 @@ ALLOWED_EXTENSIONS = {"pdf", "txt", "docx"}
 client = Groq(api_key=os.environ.get("GROQ_API_KEY","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"))
 
 def get_db():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect('/tmp/database.db')
     conn.row_factory = sqlite3.Row
     return conn
 
