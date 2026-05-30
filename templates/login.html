@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Second Brain AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f0f1a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #1a1a2e;
+            padding: 40px;
+            border-radius: 15px;
+            width: 400px;
+            text-align: center;
+        }
+        h1 { color: #7c7cff; margin-bottom: 10px; }
+        p { color: #aaa; margin-bottom: 20px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #0f0f1a;
+            color: white;
+            font-size: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #7c7cff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        button:hover { background: #5a5aff; }
+        .link {
+            margin-top: 10px;
+            color: #aaa;
+            font-size: 14px;
+        }
+        .link span {
+            color: #7c7cff;
+            cursor: pointer;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .success { background: #1a3a1a; color: #4cff4c; }
+        .error { background: #3a1a1a; color: #ff4c4c; }
+        .register-form { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Second Brain AI</h1>
+        <p>Your Personal AI Study Assistant</p>
+
+        <div class="message" id="message"></div>
+
+        <!-- Login Form -->
+        <div id="loginForm">
+            <input type="email" id="loginEmail"
+                   placeholder="Email Address" />
+            <input type="password" id="loginPassword"
+                   placeholder="Password" />
+            <button onclick="loginUser()">Login</button>
+            <div class="link">
+                Don't have account?
+                <span onclick="showRegister()">
+                    Register here
+                </span>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" class="register-form">
+            <input type="text" id="regName"
+                   placeholder="Full Name" />
+            <input type="email" id="regEmail"
+                   placeholder="Email Address" />
+            <input type="password" id="regPassword"
+                   placeholder="Password" />
+            <button onclick="registerUser()">
+                Create Account
+            </button>
+            <div class="link">
+                Already have account?
+                <span onclick="showLogin()">Login here</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showRegister() {
+            document.getElementById("loginForm")
+                .style.display = "none";
+            document.getElementById("registerForm")
+                .style.display = "block";
+            clearMessage();
+        }
+        function showLogin() {
+            document.getElementById("registerForm")
+                .style.display = "none";
+            document.getElementById("loginForm")
+                .style.display = "block";
+            clearMessage();
+        }
+        function showMessage(text, type) {
+            const msg = document.getElementById("message");
+            msg.style.display = "block";
+            msg.className = "message " + type;
+            msg.textContent = text;
+        }
+        function clearMessage() {
+            document.getElementById("message")
+                .style.display = "none";
+        }
+        async function loginUser() {
+            const email =
+                document.getElementById("loginEmail").value;
+            const password =
+                document.getElementById("loginPassword").value;
+            if (!email || !password) {
+                showMessage("Please fill all fields!", "error");
+                return;
+            }
+            const response = await fetch("/login", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({email, password})
+            });
+            const result = await response.json();
+            if (result.message) {
+                showMessage("Login successful! ✅", "success");
+                setTimeout(() => {
+                    window.location.href = "/dashboard";
+                }, 1000);
+            } else {
+                showMessage(result.error, "error");
+            }
+        }
+        async function registerUser() {
+            const name =
+                document.getElementById("regName").value;
+            const email =
+                document.getElementById("regEmail").value;
+            const password =
+                document.getElementById("regPassword").value;
+            if (!name || !email || !password) {
+                showMessage("Please fill all fields!", "error");
+                return;
+            }
+            const response = await fetch("/register", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({name, email, password})
+            });
+            const result = await response.json();
+            if (result.message) {
+                showMessage(
+                    "Account created! Please login.", "success"
+                );
+                setTimeout(() => showLogin(), 2000);
+            } else {
+                showMessage(result.error, "error");
+            }
+        }
+    </script>
+</body>
+</html>

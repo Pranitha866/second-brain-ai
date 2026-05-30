@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload - Second Brain AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f0f1a;
+            color: white;
+        }
+        .navbar {
+            background: #1a1a2e;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar h1 { color: #7c7cff; }
+        .nav-links a {
+            color: #aaa;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .main {
+            padding: 40px;
+            max-width: 600px;
+            margin: auto;
+        }
+        h2 { color: #7c7cff; margin-bottom: 20px; }
+        .upload-box {
+            background: #1a1a2e;
+            border: 2px dashed #7c7cff;
+            border-radius: 15px;
+            padding: 60px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .upload-box p { color: #aaa; margin-top: 10px; }
+        input[type="file"] { display: none; }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: #7c7cff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+        .success { background: #1a3a1a; color: #4cff4c; }
+        .error { background: #3a1a1a; color: #ff4c4c; }
+        #file-name {
+            margin-top: 15px;
+            color: #7c7cff;
+            font-size: 14px;
+        }
+        .preview-box {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+        .preview-box h3 { color: #7c7cff; margin-bottom: 10px; }
+        .preview-box p { color: #ccc; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🧠 Second Brain AI</h1>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/upload">Upload</a>
+            <a href="/chat">Chat</a>
+        </div>
+    </div>
+    <div class="main">
+        <h2>📤 Upload Your Notes</h2>
+        <div class="upload-box"
+             onclick="document.getElementById('fileInput').click()">
+            <h1>📁</h1>
+            <h3>Click to Select File</h3>
+            <p>Supports PDF, TXT, DOCX</p>
+            <input type="file" id="fileInput"
+                   accept=".pdf,.txt,.docx"
+                   onchange="showFileName()" />
+        </div>
+        <div id="file-name"></div>
+        <button class="btn" onclick="uploadFile()">
+            Upload & Save Permanently 🚀
+        </button>
+        <div class="message" id="message"></div>
+        <div class="preview-box" id="previewBox">
+            <h3>📄 Extracted Text Preview</h3>
+            <p id="previewText"></p>
+        </div>
+    </div>
+    <script>
+        function showFileName() {
+            const input = document.getElementById("fileInput");
+            const nameDiv = document.getElementById("file-name");
+            if (input.files.length > 0) {
+                nameDiv.textContent = "Selected: " +
+                    input.files[0].name;
+            }
+        }
+        async function uploadFile() {
+            const input = document.getElementById("fileInput");
+            const messageDiv = document.getElementById("message");
+            const previewBox = document.getElementById("previewBox");
+            const previewText = document.getElementById("previewText");
+            if (input.files.length === 0) {
+                messageDiv.style.display = "block";
+                messageDiv.className = "message error";
+                messageDiv.textContent = "Please select a file!";
+                return;
+            }
+            messageDiv.style.display = "block";
+            messageDiv.className = "message success";
+            messageDiv.textContent = "Processing... ⏳";
+            const formData = new FormData();
+            formData.append("file", input.files[0]);
+            const response = await fetch("/upload-file", {
+                method: "POST",
+                body: formData
+            });
+            const result = await response.json();
+            if (result.message) {
+                messageDiv.className = "message success";
+                messageDiv.textContent = result.message;
+                previewBox.style.display = "block";
+                previewText.textContent = result.preview + "...";
+            } else {
+                messageDiv.className = "message error";
+                messageDiv.textContent = result.error;
+            }
+        }
+    </script>
+</body>
+</html>

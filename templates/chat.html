@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat - Second Brain AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f0f1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .navbar {
+            background: #1a1a2e;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar h1 { color: #7c7cff; }
+        .nav-links a {
+            color: #aaa;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+        .chat-box {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .message { max-width: 75%; }
+        .user-msg {
+            background: #7c7cff;
+            padding: 12px 18px;
+            border-radius: 15px 15px 0 15px;
+            margin-left: auto;
+            text-align: right;
+        }
+        .ai-msg {
+            background: #1a1a2e;
+            padding: 12px 18px;
+            border-radius: 15px 15px 15px 0;
+            line-height: 1.6;
+        }
+        .label { font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        .label-right {
+            text-align: right;
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+        .input-area {
+            display: flex;
+            padding: 20px;
+            background: #1a1a2e;
+            gap: 10px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0f0f1a;
+            color: white;
+            font-size: 15px;
+        }
+        .input-area button {
+            padding: 14px 25px;
+            background: #7c7cff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .typing {
+            color: #7c7cff;
+            font-style: italic;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>🧠 Second Brain AI</h1>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/upload">Upload</a>
+            <a href="/chat">Chat</a>
+        </div>
+    </div>
+    <div class="chat-box" id="chatBox">
+        <div class="message">
+            <div class="label">🤖 AI</div>
+            <div class="ai-msg">
+                Hello! Upload your notes first,
+                then ask me anything from them. 📚
+            </div>
+        </div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="questionInput"
+               placeholder="Ask anything from your notes..."
+               onkeypress="handleKey(event)" />
+        <button onclick="askQuestion()">Send 🚀</button>
+    </div>
+    <script>
+        function handleKey(event) {
+            if (event.key === "Enter") askQuestion();
+        }
+        async function askQuestion() {
+            const input = document.getElementById("questionInput");
+            const chatBox = document.getElementById("chatBox");
+            const question = input.value.trim();
+            if (!question) return;
+            chatBox.innerHTML += `
+                <div class="message" style="margin-left:auto;">
+                    <div class="label-right">You</div>
+                    <div class="user-msg">${question}</div>
+                </div>`;
+            chatBox.innerHTML += `
+                <div class="typing" id="typing">
+                    🤖 AI is thinking...
+                </div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            input.value = "";
+            const response = await fetch("/ask", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({question: question})
+            });
+            const result = await response.json();
+            document.getElementById("typing").remove();
+            chatBox.innerHTML += `
+                <div class="message">
+                    <div class="label">🤖 AI</div>
+                    <div class="ai-msg">
+                        ${result.answer || result.error}
+                    </div>
+                </div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
