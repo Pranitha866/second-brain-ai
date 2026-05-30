@@ -7,18 +7,43 @@ from groq import Groq
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "secondbrainai2026"
+app.secret_key = os.environ.get("SECRET_KEY", "secondbrainai2026")
 
-UPLOAD_FOLDER = "uploads"
+UPLOAD_FOLDER = "/tmp/uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 ALLOWED_EXTENSIONS = {"pdf", "txt", "docx"}
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY","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"))
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 def get_db():
     conn = sqlite3.connect('/tmp/database.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+def init_db():
+    conn = get_db()
+    conn.execute('''CREATE TABLE IF NOT EXISTS users
+        (id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS files
+        (id INTEGER PRIMARY KEY,
+        filename TEXT NOT NULL,
+        content TEXT NOT NULL,
+        user_id INTEGER NOT NULL,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS chats
+        (id INTEGER PRIMARY KEY,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    conn.commit()
+    conn.close()
+
+init_db()
 
 def load_texts_from_db(user_id):
     conn = get_db()
@@ -182,10 +207,10 @@ def ask():
 
 Follow these rules:
 1. If answer is in notes — answer FROM notes
-2. If answer is NOT in notes — answer from 
+2. If answer is NOT in notes — answer from
    your general AI knowledge
 3. Always say which source you used like:
-   "From your notes: ..." or 
+   "From your notes: ..." or
    "From general knowledge: ..."
 
 NOTES:
