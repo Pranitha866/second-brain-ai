@@ -13,7 +13,7 @@ UPLOAD_FOLDER = "uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {"pdf", "txt", "docx"}
 
-client = Groq(api_key="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")
+client = Groq(api_key=os.environ.get("GROQ_API_KEY","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"))
 
 def get_db():
     conn = sqlite3.connect('database.db')
